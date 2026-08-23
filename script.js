@@ -142,7 +142,6 @@ const EMAILS_VIP = [
   "vitorlunardi92@gmail.com",
   "xiuuososubliminals@gmail.com",
   "nicolastresca@gmail.com",
-  "guilhermezavanela5@gmail.com",
   "aelmoviee3@gmail.com"
 ];
 
@@ -347,6 +346,9 @@ let personagemAtual = null;
 let modoExportacao = false;
 let imagemPosX = 50;
 let imagemPosY = 50;
+let imagensPersonagem = [];
+let indiceCarrossel = 0;
+let _ultimoSwipeCarrossel = 0;
 
 /* ================= DADOS FIXOS ================= */
 
@@ -2721,6 +2723,7 @@ function criarPersonagem() {
     altura: "",
     nivel: "",
     imagem: "",
+    imagens: [],
     imagemPosX: 50,
     imagemPosY: 50,
     antecedentes: "",
@@ -3394,17 +3397,12 @@ function carregarPersonagem(index) {
   if (dtAtributo) dtAtributo.value = p.dtAtributo ?? 0;
   if (dtProf) dtProf.value = p.dtProf ?? 2;
 
-  document.getElementById("preview").src = p.imagem || "";
-  imagemBase64 = p.imagem || "";
+    imagensPersonagem = Array.isArray(p.imagens) && p.imagens.length
+    ? p.imagens
+    : (p.imagem ? [{ url: p.imagem, deleteUrl: p.imagemDeleteUrl || "" }] : []);
+  indiceCarrossel = 0;
+  atualizarPreviewCarrossel();
   imagemOriginalBase64 = p.imagemOriginal || p.imagem || "";
-  imagemDeleteUrl = p.imagemDeleteUrl || "";
-
-  const nomeArquivo = document.getElementById("nome-arquivo");
-  if (nomeArquivo) {
-    nomeArquivo.innerText = p.imagem
-      ? "Imagem carregada"
-      : "Nenhum arquivo escolhido";
-  }
 
   imagemPosX = p.imagemPosX ?? 50;
   imagemPosY = p.imagemPosY ?? 50;
@@ -3496,9 +3494,10 @@ p.nivel = document.getElementById("nivel")?.value || "";
   p.mapas = mapas;
   p.proficienciasExtras =
     document.getElementById("proficienciasExtras")?.value || "";
-  p.imagem = imagemBase64;
+    p.imagens = imagensPersonagem;
+  p.imagem = imagensPersonagem[0]?.url || imagemBase64;
   p.imagemOriginal = imagemOriginalBase64;
-  p.imagemDeleteUrl = imagemDeleteUrl;
+  p.imagemDeleteUrl = imagensPersonagem[0]?.deleteUrl || imagemDeleteUrl;
   p.imagemPosX = imagemPosX;
   p.imagemPosY = imagemPosY;
   const resistenciasEl = document.getElementById("resistencias");
@@ -4097,34 +4096,38 @@ function previewImagem() {
 
   if (!input || !preview || !input.files || !input.files[0]) return;
 
+  if (imagensPersonagem.length >= 5) {
+    alertBonito("Limite de 5 fotos por personagem. Remova uma foto antes de adicionar outra.");
+    input.value = "";
+    return;
+  }
+
   const file = input.files[0];
-  if (nomeArquivo) nomeArquivo.innerText = file.name;
+  if (nomeArquivo) nomeArquivo.innerText = "Enviando imagem...";
 
   const reader = new FileReader();
   reader.onload = async function (e) {
     const base64Local = e.target.result;
-    imagemPosX = 50;
-    imagemPosY = 50;
-
-    preview.src = base64Local;
-    preview.style.objectPosition = `${imagemPosX}% ${imagemPosY}%`;
-
-    if (nomeArquivo) nomeArquivo.innerText = "Enviando imagem...";
 
     const resultado = await uploadImagemFirebase(base64Local, `personagens/${Date.now()}.jpg`);
     if (resultado.erro || !resultado.url) {
       if (nomeArquivo) nomeArquivo.innerText = "Falha ao enviar imagem";
-      alertBonito(_mensagemErroUpload("A imagem anterior foi mantida."))
+      alertBonito(_mensagemErroUpload("A foto não foi adicionada."))
+      input.value = "";
       return;
     }
-    imagemBase64 = resultado.url;
-    imagemOriginalBase64 = resultado.url;
-    imagemDeleteUrl = resultado.deleteUrl || "";
 
-    if (nomeArquivo) nomeArquivo.innerText = file.name;
+    imagensPersonagem.push({ url: resultado.url, deleteUrl: resultado.deleteUrl || "" });
+    indiceCarrossel = imagensPersonagem.length - 1;
+    imagemOriginalBase64 = resultado.url;
+    imagemPosX = 50;
+    imagemPosY = 50;
+    atualizarPreviewCarrossel();
+    _atualizarConteudoPopupFoto();
 
     salvarTudo();
     renderPersonagens();
+    input.value = "";
   };
 
   reader.readAsDataURL(file);
@@ -4288,13 +4291,171 @@ async function salvarEditorImagem() {
     alertBonito(_mensagemErroUpload("A imagem anterior foi mantida."))
     return;
   }
-  imagemBase64 = resultado.url;
+    imagemBase64 = resultado.url;
   imagemDeleteUrl = resultado.deleteUrl || "";
   // não sobrescreve imagemOriginalBase64 — mantém original para reedição
+
+  if (imagensPersonagem[indiceCarrossel]) {
+    imagensPersonagem[indiceCarrossel] = { url: resultado.url, deleteUrl: resultado.deleteUrl || "" };
+  }
 
   salvarTudo();
   renderPersonagens();
   fecharEditorImagem();
+}
+
+
+function atualizarPreviewCarrossel() {
+  const preview = document.getElementById("preview");
+  const contador = document.getElementById("carrosselContador");
+  const dots = document.getElementById("carrosselDots");
+  const btnAnterior = document.getElementById("carrosselAnterior");
+  const btnProximo = document.getElementById("carrosselProximo");
+
+  const total = imagensPersonagem.length;
+  const atual = imagensPersonagem[indiceCarrossel] || null;
+
+  imagemBase64 = atual?.url || "";
+  imagemDeleteUrl = atual?.deleteUrl || "";
+
+  if (preview) {
+    preview.src = imagemBase64;
+    preview.style.objectPosition = `${imagemPosX}% ${imagemPosY}%`;
+  }
+  if (contador) contador.textContent = total ? `${indiceCarrossel + 1}/${total}` : "";
+
+  if (btnAnterior) btnAnterior.style.display = total > 1 ? "flex" : "none";
+  if (btnProximo) btnProximo.style.display = total > 1 ? "flex" : "none";
+
+  if (dots) {
+    dots.innerHTML = "";
+    for (let i = 0; i < total; i++) {
+      const dot = document.createElement("span");
+      dot.style.cssText = `width:8px;height:8px;border-radius:50%;cursor:pointer;background:${i === indiceCarrossel ? "#C4A95B" : "rgba(196,169,91,0.3)"};`;
+      dot.onclick = () => { indiceCarrossel = i; atualizarPreviewCarrossel(); };
+      dots.appendChild(dot);
+    }
+  }
+}
+
+function trocarFotoCarrossel(delta) {
+  const total = imagensPersonagem.length;
+  if (total <= 1) return;
+  indiceCarrossel = (indiceCarrossel + delta + total) % total;
+  atualizarPreviewCarrossel();
+}
+
+(function ativarSwipeCarrosselPersonagem() {
+  function iniciar() {
+    const wrapper = document.getElementById("carrosselWrapper");
+    if (!wrapper) return;
+    let inicioX = 0;
+
+    wrapper.addEventListener("touchstart", (e) => {
+      inicioX = e.touches[0].clientX;
+    }, { passive: true });
+
+    wrapper.addEventListener("touchend", (e) => {
+      const fimX = e.changedTouches[0].clientX;
+      const diff = fimX - inicioX;
+      if (Math.abs(diff) > 40) {
+        trocarFotoCarrossel(diff < 0 ? 1 : -1);
+        _ultimoSwipeCarrossel = Date.now();
+      }
+    }, { passive: true });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", iniciar);
+  } else {
+    iniciar();
+  }
+})();
+
+
+function aoClicarFotoPersonagem() {
+  if (Date.now() - _ultimoSwipeCarrossel < 300) return; // evita abrir popup logo após um swipe
+  abrirPopupFotoPersonagem();
+}
+
+function abrirPopupFotoPersonagem() {
+  abrirPopup("Fotos do personagem", _htmlPopupFotoPersonagem(), true, null);
+}
+
+function _htmlPopupFotoPersonagem() {
+  const total = imagensPersonagem.length;
+  const atual = imagensPersonagem[indiceCarrossel];
+
+  const dotsHtml = Array.from({ length: total }).map((_, i) => `
+    <span onclick="irParaFotoPopup(${i})" style="width:9px;height:9px;border-radius:50%;cursor:pointer;display:inline-block;background:${i === indiceCarrossel ? "#C4A95B" : "rgba(196,169,91,0.3)"};"></span>
+  `).join("");
+
+  return `
+    <div style="text-align:center;">
+      ${atual ? `
+      <div style="position:relative;display:inline-block;max-width:100%;">
+        <img src="${atual.url}" style="max-width:100%;max-height:55vh;border-radius:10px;object-fit:contain;" />
+
+        ${total > 1 ? `
+        <button type="button" onclick="trocarFotoCarrosselPopup(-1)" style="position:absolute;left:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;border:none;background:rgba(0,0,0,0.6);color:#fff;font-size:18px;cursor:pointer;">‹</button>
+        <button type="button" onclick="trocarFotoCarrosselPopup(1)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;border:none;background:rgba(0,0,0,0.6);color:#fff;font-size:18px;cursor:pointer;">›</button>
+        ` : ""}
+      </div>
+      <div style="display:flex;gap:6px;justify-content:center;margin-top:10px;">${dotsHtml}</div>
+      ` : `<p style="color:#9A8A70;padding:20px 0;">Nenhuma foto ainda.</p>`}
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;">
+        <button class="popup-salvar-btn" style="margin:0;" onclick="fecharPopup(); abrirEditorImagem();" ${total === 0 ? "disabled" : ""}>Ajustar imagem</button>
+        <button class="popup-salvar-btn" style="margin:0;" onclick="document.getElementById('imagem').click()">+ Adicionar foto</button>
+        <button class="popup-salvar-btn" style="grid-column:1 / -1;margin:0;background:rgba(139,26,26,0.75);" onclick="removerFotoCarrosselPopup()" ${total === 0 ? "disabled" : ""}>🗑 Remover esta foto</button>
+      </div>
+    </div>
+  `;
+}
+
+function _atualizarConteudoPopupFoto() {
+  const textoEl = document.getElementById("popup-texto");
+  if (textoEl) textoEl.innerHTML = _htmlPopupFotoPersonagem();
+}
+
+function trocarFotoCarrosselPopup(delta) {
+  trocarFotoCarrossel(delta);
+  _atualizarConteudoPopupFoto();
+}
+
+function irParaFotoPopup(i) {
+  indiceCarrossel = i;
+  atualizarPreviewCarrossel();
+  _atualizarConteudoPopupFoto();
+}
+
+async function removerFotoCarrosselPopup() {
+  const total = imagensPersonagem.length;
+  if (total === 0) return;
+
+  const confirmar = await confirmBonito("Remover esta foto?");
+  if (!confirmar) return;
+
+    const foto = imagensPersonagem[indiceCarrossel];
+  if (foto?.deleteUrl?.startsWith("https://")) {
+    try {
+      await fetch("https://ficha-ignea-upload.fichaignea.workers.dev/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deleteUrl: foto.deleteUrl }),
+      });
+    } catch (e) { console.warn("Erro ao deletar imagem do ImgBB:", e); }
+  }
+
+  imagensPersonagem.splice(indiceCarrossel, 1);
+  if (indiceCarrossel >= imagensPersonagem.length) {
+    indiceCarrossel = Math.max(0, imagensPersonagem.length - 1);
+  }
+
+  atualizarPreviewCarrossel();
+  salvarTudo();
+  renderPersonagens();
+  _atualizarConteudoPopupFoto();
 }
 
 /* ================= INVENTÁRIO ================= */
@@ -6557,24 +6718,20 @@ async function _previewImagemGenerica(inputId, previewId, setter) {
 
 async function uploadImagemFirebase(base64, caminho) {
   try {
-    const formData = new FormData();
-    formData.append("image", base64.split(",")[1]);
-    formData.append("key", "26dfe793d942b94afde4b0cf7a63a385");
-
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 20000);
 
-    const response = await fetch("https://api.imgbb.com/1/upload", {
+    const response = await fetch("https://ficha-ignea-upload.fichaignea.workers.dev", {
       method: "POST",
-      body: formData,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ imagemBase64: base64.split(",")[1] }),
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
 
     const data = await response.json();
-    if (data.success) return { url: data.data.url, deleteUrl: data.data.delete_url };
-    // Mostra o motivo real que o ImgBB devolveu (chave inválida, limite excedido, etc.)
-    throw new Error(data?.error?.message || `ImgBB upload falhou (status ${response.status})`);
+    if (!data.erro) return { url: data.url, deleteUrl: data.deleteUrl };
+    throw new Error(data.motivo || `Upload falhou (status ${response.status})`);
   } catch (e) {
     console.error("Erro upload imagem ImgBB:", e.message || e);
     // NUNCA devolver o base64 aqui — era isso que estourava o documento no Firestore
