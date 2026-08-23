@@ -1263,32 +1263,33 @@
 
             </div>
 
-          <!-- IMAGEM -->
+                    <!-- IMAGEM -->
           <div class="personagem-imagem-box">
-            <img id="preview" src="" alt="Preview do personagem" />
+  <div id="carrosselWrapper" style="position:relative;width:100%;cursor:pointer;overflow:hidden;border-radius:12px;" onclick="aoClicarFotoPersonagem()">
+    <img id="preview" src="" alt="Preview do personagem" />
 
-            <div class="upload-imagem personagem-upload">
-              <button
-                type="button"
-                onclick="abrirEditorImagem()"
-                class="botao-upload"
-              >
-                Ajustar imagem
-              </button>
+    <button type="button" id="carrosselAnterior" onclick="event.stopPropagation(); trocarFotoCarrossel(-1)"
+      style="display:none;position:absolute;left:10px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;border:none;background:rgba(0,0,0,0.55);color:#fff;font-size:16px;cursor:pointer;z-index:2;">‹</button>
 
-              <label for="imagem" class="botao-upload"> Escolher imagem </label>
+    <button type="button" id="carrosselProximo" onclick="event.stopPropagation(); trocarFotoCarrossel(1)"
+      style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;border:none;background:rgba(0,0,0,0.55);color:#fff;font-size:16px;cursor:pointer;z-index:2;">›</button>
 
-              <input
-                type="file"
-                id="imagem"
-                accept="image/*"
-                onchange="previewImagem()"
-              />
-            </div>
-          </div>
-        </div>
+    <span id="carrosselContador"
+      style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.55);color:#fff;font-size:10px;padding:2px 7px;border-radius:20px;z-index:2;"></span>
+
+    <button type="button" onclick="event.stopPropagation(); abrirPopupFotoPersonagem()"
+      style="position:absolute;top:10px;right:10px;width:26px;height:26px;border-radius:50%;border:1px solid rgba(196,169,91,0.5);background:rgba(20,14,8,0.75);color:#C4A95B;font-size:12px;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center;padding:0;">
+      ✏️
+    </button>
+
+            <div id="carrosselDots" style="position:absolute;bottom:8px;left:0;right:0;display:flex;gap:6px;justify-content:center;z-index:2;"></div>
+  </div>
+  <input type="file" id="imagem" accept="image/*" onchange="previewImagem()" style="display:none" />
+</div>
+</div>
 
         <!-- 🔥 IDIOMAS -->
+
         <div class="secao-toggle">
           <h2
             class="titulo-secao titulo-toggle"
