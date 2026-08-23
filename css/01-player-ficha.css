@@ -2064,85 +2064,8 @@ button:active {
   margin: 0;
 }
 
-.personagem-topo {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin-bottom: 14px;
-}
 
-.personagem-imagem-box {
-  width: 135px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
 
-.personagem-upload {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 6px;
-  margin: 0 0 8px 0;
-}
-
-.personagem-upload .botao-upload {
-  width: 100%;
-  text-align: center;
-  padding: 8px 10px;
-  font-size: 13px;
-}
-
-.personagem-upload #nome-arquivo {
-  max-width: 100%;
-  font-size: 11px;
-  text-align: center;
-}
-
-#preview {
-  width: 100%;
-  max-width: 135px;
-  height: 170px;
-  object-fit: cover;
-  border-radius: 12px;
-  display: block;
-  margin: 0;
-}
-
-/* ================= PERSONAGEM TOPO ================= */
-
-.personagem-topo {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-}
-
-.personagem-campos {
-  flex: 1;
-  min-width: 0;
-}
-
-.personagem-imagem-box {
-  width: 128px;
-  flex-shrink: 0;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-#preview {
-  width: 128px;
-  height: 170px;
-  object-fit: cover;
-  border-radius: 12px;
-  display: block;
-  margin: 0 0 8px 0;
-  background: #2c221d;
-  border: 1px solid rgba(200, 169, 107, 0.18);
-}
 
 .personagem-upload {
   width: 128px;
@@ -2162,13 +2085,45 @@ button:active {
   text-overflow: unset;
 }
 
+
 /* ================= PERSONAGEM TOPO LIMPO ================= */
 
 .personagem-topo {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 12px;
   margin-bottom: 14px;
+}
+
+.personagem-imagem-box {
+  order: -1;
+  width: 68%;
+  flex-shrink: 0;
+
+  display: flex;
+}
+
+#carrosselWrapper {
+  position: relative !important;
+  width: 100% !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  isolation: isolate;
+}
+
+#carrosselWrapper #preview {
+  border-radius: 12px !important;
+}
+
+#preview {
+  width: 100%;
+  height: 100%;
+  min-height: 250px;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+  background: #4a3b31;
+  border: 1px solid rgba(200, 169, 107, 0.35);
 }
 
 .personagem-campos {
@@ -2177,6 +2132,7 @@ button:active {
 
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 8px;
 }
 
@@ -2192,62 +2148,6 @@ button:active {
   resize: none;
 }
 
-.personagem-imagem-box {
-  width: 130px;
-  flex-shrink: 0;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-#preview {
-  width: 130px;
-  height: 170px;
-  object-fit: cover;
-  border-radius: 12px;
-  display: block;
-  margin: 0 0 8px 0;
-  background: #4a3b31;
-  border: 1px solid rgba(200, 169, 107, 0.35);
-}
-
-.personagem-upload {
-  width: 130px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  margin: 0;
-}
-
-.personagem-upload .botao-upload {
-  width: 100%;
-  text-align: center;
-  padding: 8px 10px;
-  font-size: 12px;
-  border-radius: 10px;
-}
-
-.personagem-upload .botao-upload {
-  width: 100%;
-  text-align: center;
-  padding: 8px 10px;
-  font-size: 12px;
-  line-height: 1.2;
-  border-radius: 10px;
-}
-
-.personagem-upload #nome-arquivo {
-  width: 100%;
-  max-width: 100%;
-  font-size: 11px;
-  text-align: center;
-  white-space: normal;
-  overflow: visible;
-  text-overflow: unset;
-}
-
 .upload-imagem input[type="file"] {
   display: none;
 }
@@ -2257,14 +2157,12 @@ button:active {
     gap: 10px;
   }
 
-  .personagem-imagem-box,
-  .personagem-upload,
-  .personagem-imagem-box #preview {
-    width: 118px;
+  .personagem-imagem-box {
+    width: 68%;
   }
 
-  .personagem-imagem-box #preview {
-    height: 155px;
+  #preview {
+    min-height: 250px;
   }
 }
 
@@ -4743,15 +4641,6 @@ select {
 
 #nome-arquivo {
   display: none;
-}
-
-.personagem-topo {
-  align-items: flex-start; /* evita desalinhamento estranho */
-}
-
-#preview {
-  height: 220px; /* 🔥 aumenta a altura */
-  max-width: 145px; /* mantém largura controlada */
 }
 
 .carga-bolinha {
