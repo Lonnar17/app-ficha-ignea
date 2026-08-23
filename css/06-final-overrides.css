@@ -262,7 +262,7 @@ body {
 }
 
 .personagem-imagem-box {
-  width: 130px;
+  width: 40%;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -270,8 +270,8 @@ body {
 }
 
 #preview {
-  width: 130px;
-  height: 170px;
+  width: 100%;
+  height: 220px;
   object-fit: cover;
   border-radius: 12px;
   background: var(--ignea-card-soft);
